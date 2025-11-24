@@ -10,11 +10,27 @@ $directories = [
     '/tmp/storage/framework/sessions',
     '/tmp/storage/framework/views',
     '/tmp/storage/logs',
+    '/tmp/bootstrap/cache',
 ];
 
 foreach ($directories as $directory) {
     if (!is_dir($directory)) {
         mkdir($directory, 0755, true);
+    }
+}
+
+// Clear bootstrap cache files to force fresh service provider registration
+$cacheFiles = [
+    __DIR__ . '/../bootstrap/cache/packages.php',
+    __DIR__ . '/../bootstrap/cache/services.php',
+    __DIR__ . '/../bootstrap/cache/config.php',
+    __DIR__ . '/../bootstrap/cache/routes-v7.php',
+    __DIR__ . '/../bootstrap/cache/events.php',
+];
+
+foreach ($cacheFiles as $file) {
+    if (file_exists($file)) {
+        @unlink($file);
     }
 }
 
