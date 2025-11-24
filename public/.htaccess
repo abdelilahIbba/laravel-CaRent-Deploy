@@ -6,6 +6,7 @@
     RewriteEngine On
 
     # Handle Authorization Header
+    #te#mp#late# for #laravel# #framework
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
