@@ -29,18 +29,27 @@
     }
   ],
   "env": {
+    "APP_NAME": "Car Rental System",
     "APP_ENV": "production",
     "APP_DEBUG": "true",
-    "APP_KEY": "base64:HoithTic+FgtAFxX1j4X+VckLUhcuikV7dct1bOq7qg=",
+    "APP_KEY": "base64:kmgc+nEwNHN0xcORP37dhXrtELuP5yEZO96+lKY8CRY=",
+    "APP_TIMEZONE": "UTC",
     "APP_URL": "https://devinasystem.vercel.app",
     "LOG_CHANNEL": "stderr",
+    "LOG_LEVEL": "debug",
     "SESSION_DRIVER": "array",
     "CACHE_DRIVER": "array",
     "QUEUE_CONNECTION": "sync",
+    "BROADCAST_CONNECTION": "log",
+    "FILESYSTEM_DISK": "local",
     "DB_CONNECTION": "sqlite",
     "DB_DATABASE": "/tmp/database.sqlite",
     "VIEW_COMPILED_PATH": "/tmp/storage/framework/views",
-    "APP_STORAGE": "/tmp/storage"
+    "APP_SERVICES_CACHE": "",
+    "APP_PACKAGES_CACHE": "",
+    "APP_CONFIG_CACHE": "",
+    "APP_ROUTES_CACHE": "",
+    "APP_EVENTS_CACHE": ""
   },
   "build": {
     "env": {
