@@ -34,11 +34,13 @@
     "APP_KEY": "base64:HoithTic+FgtAFxX1j4X+VckLUhcuikV7dct1bOq7qg=",
     "APP_URL": "https://devinasystem.vercel.app",
     "LOG_CHANNEL": "stderr",
-    "SESSION_DRIVER": "cookie",
+    "SESSION_DRIVER": "array",
     "CACHE_DRIVER": "array",
     "QUEUE_CONNECTION": "sync",
     "DB_CONNECTION": "sqlite",
-    "DB_DATABASE": "/tmp/database.sqlite"
+    "DB_DATABASE": "/tmp/database.sqlite",
+    "VIEW_COMPILED_PATH": "/tmp/storage/framework/views",
+    "APP_STORAGE": "/tmp/storage"
   },
   "build": {
     "env": {
