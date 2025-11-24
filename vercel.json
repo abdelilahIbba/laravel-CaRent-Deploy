@@ -1,0 +1,50 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "public/index.php",
+      "use": "@vercel/php"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/build/(.*)",
+      "dest": "public/build/$1"
+    },
+    {
+      "src": "/images/(.*)",
+      "dest": "public/images/$1"
+    },
+    {
+      "src": "/(robots\\.txt|favicon\\.ico)",
+      "dest": "public/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "public/index.php"
+    }
+  ],
+  "env": {
+    "APP_ENV": "production",
+    "APP_DEBUG": "false",
+    "APP_URL": "https://your-vercel-url.vercel.app",
+    "LOG_CHANNEL": "stderr",
+    "SESSION_DRIVER": "cookie",
+    "CACHE_STORE": "array"
+  },
+  "functions": {
+    "api/*.php": {
+      "runtime": "vercel-php@0.6.0",
+      "maxDuration": 10
+    },
+    "public/index.php": {
+      "runtime": "vercel-php@0.6.0",
+      "maxDuration": 10
+    }
+  },
+  "build": {
+    "env": {
+      "VERCEL": "1"
+    }
+  }
+}

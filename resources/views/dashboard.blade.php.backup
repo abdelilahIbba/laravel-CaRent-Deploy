@@ -1,0 +1,337 @@
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Dashboard') }}
+        </h2>
+    </x-slot>
+
+    <div class="py-10 bg-gray-50 min-h-screen">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Stats Overview -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
+                <div class="bg-white shadow-lg rounded-xl p-6 flex flex-col justify-between hover:shadow-xl transition">
+                    <div class="text-gray-500 text-sm font-medium mb-2">Total Cars</div>
+                    <div class="text-3xl font-bold mb-2">{{ $totalCars }}</div>
+                    <div class="text-xs text-green-600">
+                        <span class="font-medium">
+                            @if($carsPercent >= 0)+{{ $carsPercent }}%@else{{ $carsPercent }}%@endif
+                        </span> from previous month
+                    </div>
+                </div>
+                <div class="bg-white shadow-lg rounded-xl p-6 flex flex-col justify-between hover:shadow-xl transition">
+                    <div class="text-gray-500 text-sm font-medium mb-2">Total Clients</div>
+                    <div class="text-3xl font-bold mb-2">{{ $totalClients - 1 }}</div>
+                    <div class="text-xs text-green-600">
+                        <span class="font-medium">
+                            @if($clientsPercent >= 0)+{{ $clientsPercent }}%@else{{ $clientsPercent }}%@endif
+                        </span> from previous month
+                    </div>
+                </div>
+                <div class="bg-white shadow-lg rounded-xl p-6 flex flex-col justify-between hover:shadow-xl transition">
+                    <div class="text-gray-500 text-sm font-medium mb-2">Active Testimonials</div>
+                    <div class="text-3xl font-bold mb-2">{{ $totalTestimonials }}</div>
+                    <div class="text-xs text-green-600">
+                        <span class="font-medium">
+                            @if($testimonialsPercent >= 0)+{{ $testimonialsPercent }}%@else{{ $testimonialsPercent }}%@endif
+                        </span> from previous month
+                    </div>
+                </div>
+            </div>
+
+            <!-- Revenue Overview -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
+                <div class="bg-white shadow-lg rounded-xl p-6 flex flex-col justify-between hover:shadow-xl transition">
+                    <div class="text-gray-500 text-sm font-medium mb-2">Total Revenue</div>
+                    <div class="text-3xl font-bold mb-2">${{ number_format($totalRevenue ?? 0, 2) }}</div>
+                    <div class="text-xs text-green-600">
+                        <span class="font-medium">
+                            @if($revenuePercent >= 0)+{{ $revenuePercent }}%@else{{ $revenuePercent }}%@endif
+                        </span> from previous month
+                    </div>
+                </div>
+                <div class="bg-white shadow-lg rounded-xl p-6 flex flex-col justify-between hover:shadow-xl transition">
+                    <div class="text-gray-500 text-sm font-medium mb-2">Average Booking Value</div>
+                    <div class="text-3xl font-bold mb-2">${{ number_format($averageBookingValue ?? 0, 2) }}</div>
+                    <div class="text-xs text-blue-600">
+                        <span class="font-medium">
+                            @if($averageBookingPercent >= 0)+{{ $averageBookingPercent }}%@else{{ $averageBookingPercent }}%@endif
+                        </span> from previous month
+                    </div>
+                </div>
+                <div class="bg-white shadow-lg rounded-xl p-6 flex flex-col justify-between hover:shadow-xl transition">
+                    <div class="text-gray-500 text-sm font-medium mb-2">Revenue Trend (Last 6 Months)</div>
+                    <div class="h-24">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                    <div class="text-xs text-yellow-600">
+                        <span class="font-medium">
+                            @if($revenueTrendPercent >= 0)+{{ $revenueTrendPercent }}%@else{{ $revenueTrendPercent }}%@endif
+                        </span> from previous month
+                    </div>
+                </div>
+            </div>
+
+            <!-- Booking Snapshot -->
+            <div class="bg-white shadow-lg rounded-xl p-6 mb-10">
+                <p class="text-sm text-gray-500">Total Bookings</p>
+                <p class="text-3xl font-bold mt-3">{{ $totalBookings }}</p>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
+                    <div>
+                        <p class="text-xs uppercase tracking-wide text-gray-400">Pending</p>
+                        <p class="text-2xl font-semibold text-yellow-600">{{ $pendingBookings }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs uppercase tracking-wide text-gray-400">Confirmed</p>
+                        <p class="text-2xl font-semibold text-green-600">{{ $confirmedBookings }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs uppercase tracking-wide text-gray-400">Cancelled</p>
+                        <p class="text-2xl font-semibold text-red-500">{{ $cancelledBookings }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+                <div class="bg-white shadow-lg rounded-xl p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Booking Status Breakdown</h3>
+                    <div class="h-64 flex items-center justify-center">
+                        @if(($pendingBookings + $confirmedBookings + $cancelledBookings) > 0)
+                            <canvas id="bookingStatusChart" class="max-h-60"></canvas>
+                        @else
+                            <p class="text-gray-400">No booking data available yet.</p>
+                        @endif
+                    </div>
+                </div>
+                <div class="bg-white shadow-lg rounded-xl p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-6">Monthly Statistics</h3>
+                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                        <div class="rounded-2xl border border-gray-100 p-4">
+                            <p class="text-sm text-gray-500 mb-3">Cars Added</p>
+                            <div class="h-48">
+                                @if(array_sum($carCounts) > 0)
+                                    <canvas id="statsChart"></canvas>
+                                @else
+                                    <div class="flex items-center justify-center h-full text-gray-400 text-sm">
+                                        No car data available for the last 6 months.
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                        <div class="rounded-2xl border border-gray-100 p-4">
+                            <p class="text-sm text-gray-500 mb-3">New Clients</p>
+                            <div class="h-48">
+                                @if(array_sum($clientCounts) > 0)
+                                    <canvas id="clientsChart"></canvas>
+                                @else
+                                    <div class="flex items-center justify-center h-full text-gray-400 text-sm">
+                                        No client data available for the last 6 months.
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions & Recent Activity -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+                <div class="bg-white shadow-lg rounded-xl p-8">
+                    <h3 class="text-lg font-medium text-gray-900 mb-6">Quick Actions</h3>
+                    <div class="space-y-4">
+                        <a href="{{ route('admin.cars.create') }}" class="block p-4 bg-gray-50 hover:bg-gray-100 rounded-lg font-semibold transition">Add New Car</a>
+                        <a href="{{ route('admin.clients.create') }}" class="block p-4 bg-gray-50 hover:bg-gray-100 rounded-lg font-semibold transition">Add New Client</a>
+                        <a href="{{ route('admin.testimonials.create') }}" class="block p-4 bg-gray-50 hover:bg-gray-100 rounded-lg font-semibold transition">Add New Testimonial</a>
+                    </div>
+                </div>
+                <div class="bg-white shadow-lg rounded-xl p-8">
+                    <h3 class="text-lg font-medium text-gray-900 mb-6">Recent Activity</h3>
+                    <div class="space-y-4">
+                        @forelse($recentActivities as $activity)
+                            <div class="flex items-center p-4 bg-gray-50 rounded-lg">
+                                <span class="flex-1">{{ $activity->description }}</span>
+                                <span class="text-sm text-gray-500">{{ $activity->time_ago }}</span>
+                            </div>
+                        @empty
+                            <div class="p-4 bg-gray-50 rounded-lg text-gray-500">No recent activity</div>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Bookings Table -->
+            <div class="bg-white shadow-lg rounded-xl mb-10">
+                <div class="p-8">
+                    <h3 class="text-lg font-medium text-gray-900 mb-6">Recent Bookings</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden">
+                            <thead class="bg-gradient-to-r from-gray-100 to-gray-200">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase">Car</th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase">Client</th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase">Start Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase">End Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($recentBookings as $booking)
+                                    <tr class="hover:bg-blue-50 transition">
+                                        <td class="px-6 py-4 font-semibold text-gray-800">{{ $booking->car->name ?? 'N/A' }}</td>
+                                        <td class="px-6 py-4 text-gray-700">{{ $booking->client->name ?? 'N/A' }}</td>
+                                        <td class="px-6 py-4">
+                                            <span class="px-3 py-1 rounded-full text-xs font-semibold
+                                                @if($booking->status == 'pending') bg-yellow-100 text-yellow-800
+                                                @elseif($booking->status == 'confirmed') bg-green-100 text-green-800
+                                                @elseif($booking->status == 'cancelled') bg-red-100 text-red-800
+                                                @endif">
+                                                {{ ucfirst($booking->status) }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 text-gray-600">{{ $booking->start_date }}</td>
+                                        <td class="px-6 py-4 text-gray-600">{{ $booking->end_date }}</td>
+                                        <td class="px-6 py-4 text-right text-blue-700 font-bold">${{ number_format($booking->amount ?? 0, 2) }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="6" class="px-6 py-4 text-gray-500">No recent bookings</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Export/Import -->
+            <div class="bg-white shadow-lg rounded-xl mb-10">
+                <div class="p-8">
+                    <h3 class="text-lg font-medium text-gray-900 mb-6">Quick Export/Import</h3>
+                    <div class="flex gap-2 mb-4">
+                        <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md shadow text-sm font-semibold" onclick="exportCSV('bookings')">Export Bookings CSV</button>
+                        <button class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md shadow text-sm font-semibold" onclick="exportCSV('cars')">Export Cars CSV</button>
+                        <button class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md shadow text-sm font-semibold" onclick="exportCSV('clients')">Export Clients CSV</button>
+                        <label class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md shadow text-sm font-semibold cursor-pointer">
+                            Import CSV
+                            <input type="file" accept=".csv" onchange="importCSV(event)" class="hidden">
+                        </label>
+                    </div>
+                    <div id="csvStatus" class="text-sm text-gray-500"></div>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+    @push('scripts')
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            // Revenue Chart
+            @if(isset($revenueMonths) && isset($revenueData))
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            new Chart(revenueCtx, {
+                type: 'line',
+                data: {
+                    labels: @json($revenueMonths),
+                    datasets: [{
+                        label: 'Revenue',
+                        data: @json($revenueData),
+                        borderColor: 'rgb(34,197,94)',
+                        backgroundColor: 'rgba(34,197,94,0.2)',
+                        tension: 0.1,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+            @endif
+            // Booking Status Chart
+            @if(($pendingBookings + $confirmedBookings + $cancelledBookings) > 0)
+            const bookingCtx = document.getElementById('bookingStatusChart').getContext('2d');
+            new Chart(bookingCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Pending', 'Confirmed', 'Cancelled'],
+                    datasets: [{
+                        data: [{{ $pendingBookings }}, {{ $confirmedBookings }}, {{ $cancelledBookings }}],
+                        backgroundColor: ['#facc15', '#22c55e', '#ef4444'],
+                        borderWidth: 0,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+            @endif
+            // Dummy CSV export/import functions
+            function exportCSV(type) {
+                document.getElementById('csvStatus').innerText = 'Export ' + type + ' CSV is not implemented yet.';
+            }
+            function importCSV(event) {
+                document.getElementById('csvStatus').innerText = 'Import CSV is not implemented yet.';
+            }
+            @if(array_sum($carCounts) > 0)
+            const ctx = document.getElementById('statsChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: @json($months),
+                    datasets: [{
+                        label: 'Cars',
+                        data: @json($carCounts),
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        tension: 0.1,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: true },
+                        title: { display: false }
+                    }
+                }
+            });
+            @endif
+            @if(array_sum($clientCounts) > 0)
+            const clientsCtx = document.getElementById('clientsChart').getContext('2d');
+            new Chart(clientsCtx, {
+                type: 'line',
+                data: {
+                    labels: @json($months),
+                    datasets: [{
+                        label: 'Clients',
+                        data: @json($clientCounts),
+                        borderColor: 'rgb(99, 102, 241)',
+                        backgroundColor: 'rgba(99, 102, 241, 0.2)',
+                        tension: 0.1,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: true },
+                        title: { display: false }
+                    }
+                }
+            });
+            @endif
+        </script>
+    @endpush
+</x-app-layout>
