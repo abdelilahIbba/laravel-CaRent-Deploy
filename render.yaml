@@ -9,7 +9,7 @@ services:
       php artisan config:cache
       php artisan route:cache
       php artisan view:cache
-    startCommand: "php artisan serve --host 0.0.0.0 --port $PORT"
+    startCommand: heroku-php-apache2 public/
     envVars:
       - key: APP_ENV
         value: production
