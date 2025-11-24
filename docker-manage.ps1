@@ -49,56 +49,56 @@ function Show-Help {
 
 function Start-Containers {
     Show-Header
-    Write-ColorOutput Yellow "🚀 Starting Docker containers..."
+    Write-ColorOutput Yellow "[*] Starting Docker containers..."
     
-    docker-compose up -d
+    docker compose up -d
     
     if ($LASTEXITCODE -eq 0) {
-        Write-ColorOutput Green "✅ Containers started successfully"
+        Write-ColorOutput Green "[OK] Containers started successfully"
         Start-Sleep -Seconds 3
-        docker-compose ps
+        docker compose ps
         Write-Host ""
         Write-ColorOutput Cyan "Application available at: http://localhost:8080"
     } else {
-        Write-ColorOutput Red "❌ Failed to start containers"
+        Write-ColorOutput Red "[ERROR] Failed to start containers"
         exit 1
     }
 }
 
 function Stop-Containers {
     Show-Header
-    Write-ColorOutput Yellow "🛑 Stopping Docker containers..."
+    Write-ColorOutput Yellow "[*] Stopping Docker containers..."
     
-    docker-compose down
+    docker compose down
     
     if ($LASTEXITCODE -eq 0) {
-        Write-ColorOutput Green "✅ Containers stopped successfully"
+        Write-ColorOutput Green "[OK] Containers stopped successfully"
         Write-ColorOutput Gray "(Data is preserved. Use 'start' to run again)"
     } else {
-        Write-ColorOutput Red "❌ Failed to stop containers"
+        Write-ColorOutput Red "[ERROR] Failed to stop containers"
         exit 1
     }
 }
 
 function Restart-Containers {
     Show-Header
-    Write-ColorOutput Yellow "🔄 Restarting Docker containers..."
+    Write-ColorOutput Yellow "[*] Restarting Docker containers..."
     
-    docker-compose restart
+    docker compose restart
     
     if ($LASTEXITCODE -eq 0) {
-        Write-ColorOutput Green "✅ Containers restarted successfully"
+        Write-ColorOutput Green "[OK] Containers restarted successfully"
         Start-Sleep -Seconds 3
-        docker-compose ps
+        docker compose ps
     } else {
-        Write-ColorOutput Red "❌ Failed to restart containers"
+        Write-ColorOutput Red "[ERROR] Failed to restart containers"
         exit 1
     }
 }
 
 function Rebuild-Containers {
     Show-Header
-    Write-ColorOutput Yellow "🔨 Rebuilding Docker containers..."
+    Write-ColorOutput Yellow "[*] Rebuilding Docker containers..."
     Write-ColorOutput Gray "This will:"
     Write-Host "  1. Stop running containers"
     Write-Host "  2. Rebuild images with latest code"
@@ -112,63 +112,63 @@ function Rebuild-Containers {
     }
     
     Write-ColorOutput Yellow "Stopping containers..."
-    docker-compose down
+    docker compose down
     
     Write-ColorOutput Yellow "Building images (this may take a few minutes)..."
-    docker-compose build --no-cache
+    docker compose build --no-cache
     
     if ($LASTEXITCODE -ne 0) {
-        Write-ColorOutput Red "❌ Build failed"
+        Write-ColorOutput Red "[ERROR] Build failed"
         exit 1
     }
     
     Write-ColorOutput Yellow "Starting new containers..."
-    docker-compose up -d
+    docker compose up -d
     
     if ($LASTEXITCODE -eq 0) {
-        Write-ColorOutput Green "✅ Rebuild complete!"
+        Write-ColorOutput Green "[OK] Rebuild complete!"
         Start-Sleep -Seconds 3
-        docker-compose ps
+        docker compose ps
     } else {
-        Write-ColorOutput Red "❌ Failed to start containers"
+        Write-ColorOutput Red "[ERROR] Failed to start containers"
         exit 1
     }
 }
 
 function Show-Logs {
     Show-Header
-    Write-ColorOutput Yellow "📋 Showing application logs (Ctrl+C to exit)..."
+    Write-ColorOutput Yellow "[*] Showing application logs (Ctrl+C to exit)..."
     Write-Host ""
     
-    docker-compose logs -f app
+    docker compose logs -f app
 }
 
 function Open-Shell {
     Show-Header
-    Write-ColorOutput Yellow "🐚 Opening shell in app container..."
+    Write-ColorOutput Yellow "[*] Opening shell in app container..."
     Write-ColorOutput Gray "Type 'exit' to leave the shell"
     Write-Host ""
     
-    docker-compose exec app sh
+    docker compose exec app sh
 }
 
 function Run-Migrations {
     Show-Header
-    Write-ColorOutput Yellow "📦 Running database migrations..."
+    Write-ColorOutput Yellow "[*] Running database migrations..."
     
-    docker-compose exec app php artisan migrate --force
+    docker compose exec app php artisan migrate --force
     
     if ($LASTEXITCODE -eq 0) {
-        Write-ColorOutput Green "✅ Migrations completed"
+        Write-ColorOutput Green "[OK] Migrations completed"
     } else {
-        Write-ColorOutput Red "❌ Migration failed"
+        Write-ColorOutput Red "[ERROR] Migration failed"
         exit 1
     }
 }
 
 function Fresh-Database {
     Show-Header
-    Write-ColorOutput Red "⚠️  WARNING: This will DELETE ALL DATABASE DATA!"
+    Write-ColorOutput Red "[WARNING] This will DELETE ALL DATABASE DATA!"
     Write-ColorOutput Yellow "This command will:"
     Write-Host "  1. Drop all tables"
     Write-Host "  2. Re-run all migrations"
@@ -182,10 +182,10 @@ function Fresh-Database {
     }
     
     Write-ColorOutput Yellow "Running fresh migrations..."
-    docker-compose exec app php artisan migrate:fresh --force
+    docker compose exec app php artisan migrate:fresh --force
     
     if ($LASTEXITCODE -ne 0) {
-        Write-ColorOutput Red "❌ Fresh migration failed"
+        Write-ColorOutput Red "[ERROR] Fresh migration failed"
         exit 1
     }
     
@@ -193,15 +193,15 @@ function Fresh-Database {
     $seed = Read-Host "Do you want to seed the database? (y/n)"
     if ($seed -eq "y") {
         Write-ColorOutput Yellow "Seeding database..."
-        docker-compose exec app php artisan db:seed --force
+        docker compose exec app php artisan db:seed --force
     }
     
-    Write-ColorOutput Green "✅ Database refreshed"
+    Write-ColorOutput Green "[OK] Database refreshed"
 }
 
 function Backup-Database {
     Show-Header
-    Write-ColorOutput Yellow "💾 Creating database backup..."
+    Write-ColorOutput Yellow "[*] Creating database backup..."
     
     $timestamp = Get-Date -Format "yyyy-MM-dd_HHmmss"
     $filename = "backup_${timestamp}.sql"
@@ -213,62 +213,62 @@ function Backup-Database {
     
     Write-ColorOutput Gray "Backing up database: $dbName"
     
-    $result = docker-compose exec -T db mysqldump -u root -p"$rootPass" "$dbName" 2>&1
+    $result = docker compose exec -T db mysqldump -u root -p"$rootPass" "$dbName" 2>&1
     
     if ($LASTEXITCODE -eq 0) {
         $result | Out-File -FilePath $filename -Encoding UTF8
         $size = (Get-Item $filename).Length / 1KB
-        Write-ColorOutput Green "✅ Backup created: $filename ($([math]::Round($size, 2)) KB)"
+        Write-ColorOutput Green "[OK] Backup created: $filename ($([math]::Round($size, 2)) KB)"
         Write-Host ""
         Write-ColorOutput Cyan "To restore this backup:"
-        Write-Host "Get-Content $filename | docker-compose exec -T db mysql -u root -p`"$rootPass`" $dbName"
+        Write-Host "Get-Content $filename | docker compose exec -T db mysql -u root -p`"$rootPass`" $dbName"
     } else {
-        Write-ColorOutput Red "❌ Backup failed: $result"
+        Write-ColorOutput Red "[ERROR] Backup failed: $result"
         exit 1
     }
 }
 
 function Show-Status {
     Show-Header
-    Write-ColorOutput Yellow "📊 Container Status:"
+    Write-ColorOutput Yellow "Container Status:"
     Write-Host ""
     
-    docker-compose ps
+    docker compose ps
     
     Write-Host ""
-    Write-ColorOutput Yellow "🏥 Health Check:"
+    Write-ColorOutput Yellow "Health Check:"
     
     # Check app health
     try {
         $response = Invoke-WebRequest -Uri "http://localhost:8080/health" -TimeoutSec 5 -UseBasicParsing
         if ($response.StatusCode -eq 200) {
-            Write-ColorOutput Green "✅ Application: Healthy"
+            Write-ColorOutput Green "[OK] Application: Healthy"
         }
     } catch {
-        Write-ColorOutput Red "❌ Application: Not responding"
+        Write-ColorOutput Red "[ERROR] Application: Not responding"
     }
     
     # Check database
-    $dbCheck = docker-compose exec -T db mysqladmin ping -h localhost -u root -p"$(Get-Content .env | Select-String 'DB_ROOT_PASSWORD' | ForEach-Object { $_.ToString().Split('=')[1] })" 2>&1
+    $dbCheck = docker compose exec -T db mysqladmin ping -h localhost -u root -p"$(Get-Content .env | Select-String 'DB_ROOT_PASSWORD' | ForEach-Object { $_.ToString().Split('=')[1] })" 2>&1
     if ($dbCheck -match "alive") {
-        Write-ColorOutput Green "✅ Database: Running"
+        Write-ColorOutput Green "[OK] Database: Running"
     } else {
-        Write-ColorOutput Red "❌ Database: Not running"
+        Write-ColorOutput Red "[ERROR] Database: Not running"
     }
     
     # Check Redis
-    $redisCheck = docker-compose exec -T redis redis-cli ping 2>&1
+    $redisCheck = docker compose exec -T redis redis-cli ping 2>&1
     if ($redisCheck -match "PONG") {
-        Write-ColorOutput Green "✅ Redis: Running"
+        Write-ColorOutput Green "[OK] Redis: Running"
     } else {
-        Write-ColorOutput Red "❌ Redis: Not running"
+        Write-ColorOutput Red "[ERROR] Redis: Not running"
     }
     
     Write-Host ""
     Write-ColorOutput Cyan "Access Points:"
-    Write-Host "  • Application:  http://localhost:8080"
-    Write-Host "  • Database:     localhost:3307"
-    Write-Host "  • Redis:        localhost:6380"
+    Write-Host "  - Application:  http://localhost:8080"
+    Write-Host "  - Database:     localhost:3307"
+    Write-Host "  - Redis:        localhost:6380"
 }
 
 # Main command dispatcher

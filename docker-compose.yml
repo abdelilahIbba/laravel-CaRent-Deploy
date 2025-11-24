@@ -1,6 +1,5 @@
 # Docker Compose configuration for Laravel Car Rental System
 # This orchestrates the application, database, and optional services
-version: '3.8'
 
 services:
   # PHP Application with Nginx
